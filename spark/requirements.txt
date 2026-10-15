@@ -1,0 +1,9 @@
+# Local development and tests only. Dataproc Serverless runtime 2.2 provides Spark 3.5, Python 3.11
+# and the BigQuery connector; do not ship these.
+# Local tests also need Java 8, 11 or 17 on PATH.
+pyspark==3.5.3
+pytest>=8
+# Tests build DataFrames through Arrow; without it every createDataFrame starts slow Python workers on Windows.
+pandas==2.1.4
+pyarrow==14.0.2
+numpy==1.26.4

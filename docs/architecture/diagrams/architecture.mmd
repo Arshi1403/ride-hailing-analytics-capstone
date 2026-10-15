@@ -1,0 +1,23 @@
+flowchart LR
+  subgraph Sources
+    P[Python producer]
+    H[Historical CSV in GCS landing bucket]
+  end
+  P --> PS[Pub/Sub rh-ride-events]
+  PS --> DF[Dataflow streaming]
+  DF --> RAW[(BigQuery rh_raw)]
+  DF -.invalid.-> REJ[(rh_raw.rejected_events)]
+  H -->|Composer load job| RAW
+  RAW --> SP[Dataproc Serverless PySpark]
+  SP --> PQ[(Curated Parquet in GCS)]
+  PQ -->|load to rh_staging| STG[(rh_staging)]
+  STG -->|MERGE| CUR[(BigQuery rh_curated)]
+  CUR --> DQ{DQ gate}
+  DQ -->|pass| MART[rh_marts views]
+  DQ -->|pass| ML[BQML ARIMA_PLUS rh_ml]
+  ML --> MART
+  MART --> LS[Looker Studio]
+  CMP[Cloud Composer daily DAG] -.orchestrates.-> H
+  CMP -.-> SP
+  CMP -.-> DQ
+  CMP -.-> ML
